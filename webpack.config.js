@@ -19,15 +19,21 @@ const PATHS  = {
   build: join(__dirname, 'build')
 };
 
-const common = {
-  entry: {
-    app: PATHS.app
+const common = merge(
+  {
+    entry: {
+      app: PATHS.app
+    },
+    output: {
+      path: PATHS.build,
+      filename: '[name].js'
+    }
   },
-  output: {
-    path: PATHS.build,
-    filename: '[name].js'
-  }
-};
+  parts.includeHTML.indexTemplate({
+    title: 'New Application',
+    appMountId: 'app'
+  })
+);
 
 let config;
 
@@ -39,7 +45,7 @@ switch (TARGET) {
       {
         devtool: 'source-map',
         entry: {
-          style: PATHS.style
+          slides: PATHS.slides
         },
         output: {
           path: PATHS.build,
@@ -47,7 +53,7 @@ switch (TARGET) {
           chunkFilename: '[chunkhash].js'
         }
       },
-      parts.buildSass.andExtract(PATHS.style)
+      parts.includeMD(PATHS.slides)
     );
     break;
   default: config = merge(
@@ -58,10 +64,6 @@ switch (TARGET) {
         style: PATHS.style
       }
     },
-    parts.includeHTML.indexTemplate({
-      title: 'New Application',
-      appMountId: 'app'
-    }),
     parts.devServer({
       // Customize host/port here if needed
       host: process.env.HOST,
