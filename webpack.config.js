@@ -16,6 +16,7 @@ const PATHS  = {
   style: [
     join(__dirname, 'assets', 'styles', 'main.scss')
   ],
+  template: join(__dirname, 'app', 'template.jade'),
   build: join(__dirname, 'build')
 };
 
@@ -27,9 +28,17 @@ const common = merge(
     output: {
       path: PATHS.build,
       filename: '[name].js'
+    },
+    resolve: {
+      // NOTE: Do not remove ''. If you do, imports w/o an extension won't function!
+      extensions: ['', '.js'],
+      modulesDirectories: [ 'node_modules' ]
     }
   },
-  parts.includeHTML.indexTemplate({
+  parts.includeBabel.load(),
+  parts.includeBabel.lint(),
+  parts.includeHTML({
+    template: PATHS.template,
     title: 'New Application',
     appMountId: 'app'
   })
@@ -45,7 +54,7 @@ switch (TARGET) {
       {
         devtool: 'source-map',
         entry: {
-          slides: PATHS.slides
+          style: PATHS.style
         },
         output: {
           path: PATHS.build,
@@ -53,7 +62,7 @@ switch (TARGET) {
           chunkFilename: '[chunkhash].js'
         }
       },
-      parts.includeMD(PATHS.slides)
+      parts.buildSass.andExtract(PATHS.style)
     );
     break;
   default: config = merge(
@@ -70,7 +79,10 @@ switch (TARGET) {
       port: process.env.PORT
     }),
     parts.buildSass.basic(PATHS.style),
-    parts.npmInstall({ dev: true })
+    parts.npmInstall({
+      dev: true,
+      peerDependencies: true
+    })
   );
 }
 
